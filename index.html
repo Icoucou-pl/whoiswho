@@ -877,11 +877,16 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const routing = document.getElementById('routingSection');
     const links  = document.getElementById('linksSection');
     const grid   = document.getElementById('deptGrid');
-    if (f==='routing') { grid.classList.add('hidden'); links.style.display='none'; routing.style.display=''; routing.scrollIntoView({behavior:'smooth',block:'start'}); return; }
-    if (f==='links')   { grid.classList.add('hidden'); routing.style.display='none'; links.style.display=''; links.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+    // Wyczyść wyszukiwarkę i przywróć wszystkie osoby
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
+    document.querySelectorAll('.person').forEach(p => p.style.display = '');
+    document.querySelectorAll('.link-card').forEach(lc => lc.style.display = '');
+    if (f==='routing') { grid.classList.add('hidden'); if(links) links.style.display='none'; routing.style.display=''; routing.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+    if (f==='links')   { grid.classList.add('hidden'); routing.style.display='none'; if(links) links.style.display=''; if(links) links.scrollIntoView({behavior:'smooth',block:'start'}); return; }
     grid.classList.remove('hidden');
     routing.style.display = f==='all' ? '' : 'none';
-    links.style.display   = f==='all' ? '' : 'none';
+    if(links) links.style.display = f==='all' ? '' : 'none';
     document.querySelectorAll('.dept-card').forEach(card => card.classList.toggle('hidden', f!=='all' && card.dataset.cat!==f));
   });
 });
@@ -892,12 +897,44 @@ document.getElementById('searchInput').addEventListener('input', function() {
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('[data-filter="all"]').classList.add('active');
   document.getElementById('deptGrid').classList.remove('hidden');
-  document.getElementById('routingSection').style.display='';
-  document.querySelectorAll('.dept-card').forEach(c=>{
-    const vis = !q || (c.textContent+' '+c.dataset.keywords).toLowerCase().includes(q);
-    c.classList.toggle('hidden',!vis);
-    if(vis) any=true;
+  document.getElementById('routingSection').style.display = '';
+  const linksSection = document.getElementById('linksSection');
+  if (linksSection) linksSection.style.display = '';
+
+  // Filtruj działy — pokaż tylko pasujące osoby
+  document.querySelectorAll('.dept-card').forEach(card => {
+    if (!q) {
+      card.classList.remove('hidden');
+      card.querySelectorAll('.person').forEach(p => p.style.display = '');
+      any = true;
+      return;
+    }
+    const deptText = (card.querySelector('h2')?.textContent||'') + ' ' + (card.dataset.keywords||'');
+    let cardVisible = false;
+    card.querySelectorAll('.person').forEach(p => {
+      const vis = p.textContent.toLowerCase().includes(q);
+      p.style.display = vis ? '' : 'none';
+      if (vis) cardVisible = true;
+    });
+    if (!cardVisible && deptText.toLowerCase().includes(q)) {
+      card.querySelectorAll('.person').forEach(p => p.style.display = '');
+      cardVisible = true;
+    }
+    card.classList.toggle('hidden', !cardVisible);
+    if (cardVisible) any = true;
   });
+
+  // Filtruj linki
+  if (linksSection) {
+    linksSection.querySelectorAll('.link-card').forEach(lc => {
+      const vis = !q || lc.textContent.toLowerCase().includes(q);
+      lc.style.display = vis ? '' : 'none';
+      if (vis) any = true;
+    });
+  }
+
+  document.getElementById('noResults').classList.toggle('hidden', any || !q);
+});
   document.getElementById('noResults').classList.toggle('hidden', any||!q);
 });
 
