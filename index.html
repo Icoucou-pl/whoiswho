@@ -1013,6 +1013,7 @@ async function doChangePin() {
 // ── LINKS ──
 function renderLinks() {
   const grid = document.getElementById('linksGrid');
+  if (!grid) return;
   const links = S.links || [];
   if (!links.length) {
     grid.innerHTML = '<div class="links-empty">' + (S.role==='admin' ? '🔗 Brak linków. Dodaj pierwszy w panelu administracyjnym.' : '🔗 Administrator nie dodał jeszcze żadnych linków.') + '</div>';
@@ -1036,6 +1037,7 @@ function renderLinks() {
 
 function renderLinksTable() {
   const tbody = document.getElementById('linksBody');
+  if (!tbody) return;
   tbody.innerHTML = (S.links||[]).map(l => `<tr>
     <td>${l.icon||''}</td>
     <td>${esc(l.name)}</td>
