@@ -67,10 +67,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .dept-admin-btns{display:flex;gap:5px;flex-shrink:0;}
 .arrow{color:var(--text-muted);transition:transform 0.3s;font-size:0.9rem;flex-shrink:0;}
 .dept-card.open .arrow{transform:rotate(180deg);}
-.dept-mission{overflow:hidden;max-height:0;transition:max-height 0.35s ease;}
-.dept-card.open .dept-mission{max-height:120px;}
+.dept-mission{overflow:hidden;max-height:200px;}
 .dept-mission p{padding:10px 20px 4px;font-size:0.82rem;color:var(--text-muted);font-style:italic;}
-.dept-body{padding:10px 20px 14px;}
+.dept-body{padding:10px 20px 14px;overflow:hidden;max-height:0;transition:max-height 0.4s ease;}
+.dept-card.open .dept-body{max-height:2000px;}
 
 .person{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);position:relative;}
 .person:last-child{border-bottom:none;}
