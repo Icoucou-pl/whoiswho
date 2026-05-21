@@ -181,6 +181,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .link-card:hover .link-admin-btns{opacity:1;}
 .links-empty{text-align:center;padding:50px;color:var(--text-muted);grid-column:1/-1;}
 
+
+/* ── EMOJI PICKER ── */
+.emoji-field{position:relative;}
+.emoji-input-row{display:flex;gap:8px;align-items:center;}
+.emoji-input-row input{flex:1;}
+.btn-emoji-pick{background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:1.1rem;cursor:pointer;transition:border 0.2s;white-space:nowrap;}
+.btn-emoji-pick:hover{border-color:var(--teal);}
+.emoji-picker{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:500;background:#1a1f38;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px;width:320px;box-shadow:0 12px 40px rgba(0,0,0,0.5);}
+.emoji-picker.open{display:block;}
+.emoji-cat-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin:8px 0 4px;font-weight:600;}
+.emoji-cat-label:first-child{margin-top:0;}
+.emoji-grid{display:flex;flex-wrap:wrap;gap:4px;}
+.emoji-btn{background:none;border:1px solid transparent;border-radius:6px;padding:5px 6px;font-size:1.15rem;cursor:pointer;transition:background 0.15s,border 0.15s;line-height:1;}
+.emoji-btn:hover{background:rgba(255,255,255,0.08);border-color:var(--border);}
+
 </style>
 </head>
 <body>
@@ -1083,6 +1098,25 @@ async function deleteLinkConfirm(id) {
   if (res && res.ok) { toast('Link usunięty'); await loadAll(); }
   else toast(res?.error||'Błąd', true);
 }
+
+// ── EMOJI PICKER ──
+function toggleEmojiPicker() {
+  const p = document.getElementById('emojiPicker');
+  p.classList.toggle('open');
+}
+
+function pickEmoji(emoji) {
+  document.getElementById('lIcon').value = emoji;
+  document.getElementById('emojiPicker').classList.remove('open');
+}
+
+// Zamknij picker po kliknięciu poza nim
+document.addEventListener('click', e => {
+  const picker = document.getElementById('emojiPicker');
+  if (picker && !e.target.closest('.emoji-field')) {
+    picker.classList.remove('open');
+  }
+});
 </script>
 
 
@@ -1110,7 +1144,93 @@ async function deleteLinkConfirm(id) {
     <h3 id="linkModalTitle">Nowy link</h3>
     <p class="modal-sub">Link pojawi się w zakładce "Przydatne linki" dla wszystkich.</p>
     <input type="hidden" id="lId">
-    <div class="fg"><label>Ikona (emoji)</label><input type="text" id="lIcon" placeholder="📊"></div>
+    <div class="fg emoji-field">
+      <label>Ikona</label>
+      <div class="emoji-input-row">
+        <input type="text" id="lIcon" placeholder="📊" readonly style="cursor:pointer" onclick="toggleEmojiPicker()">
+        <button type="button" class="btn-emoji-pick" onclick="toggleEmojiPicker()">Wybierz ikon&#x0119; ▾</button>
+      </div>
+      <div class="emoji-picker" id="emojiPicker">
+        <div class="emoji-cat-label">📁 Dokumenty & Arkusze</div>
+        <div class="emoji-grid">
+          <button class="emoji-btn" onclick="pickEmoji('📊')">📊</button>
+          <button class="emoji-btn" onclick="pickEmoji('📈')">📈</button>
+          <button class="emoji-btn" onclick="pickEmoji('📉')">📉</button>
+          <button class="emoji-btn" onclick="pickEmoji('📋')">📋</button>
+          <button class="emoji-btn" onclick="pickEmoji('📄')">📄</button>
+          <button class="emoji-btn" onclick="pickEmoji('📝')">📝</button>
+          <button class="emoji-btn" onclick="pickEmoji('🗂️')">🗂️</button>
+          <button class="emoji-btn" onclick="pickEmoji('📁')">📁</button>
+          <button class="emoji-btn" onclick="pickEmoji('🗃️')">🗃️</button>
+          <button class="emoji-btn" onclick="pickEmoji('📑')">📑</button>
+        </div>
+        <div class="emoji-cat-label">☁️ Chmura & Narzędzia</div>
+        <div class="emoji-grid">
+          <button class="emoji-btn" onclick="pickEmoji('🔗')">🔗</button>
+          <button class="emoji-btn" onclick="pickEmoji('💻')">💻</button>
+          <button class="emoji-btn" onclick="pickEmoji('🖥️')">🖥️</button>
+          <button class="emoji-btn" onclick="pickEmoji('⚙️')">⚙️</button>
+          <button class="emoji-btn" onclick="pickEmoji('🛠️')">🛠️</button>
+          <button class="emoji-btn" onclick="pickEmoji('🔧')">🔧</button>
+          <button class="emoji-btn" onclick="pickEmoji('📡')">📡</button>
+          <button class="emoji-btn" onclick="pickEmoji('🖨️')">🖨️</button>
+          <button class="emoji-btn" onclick="pickEmoji('💾')">💾</button>
+          <button class="emoji-btn" onclick="pickEmoji('🔐')">🔐</button>
+        </div>
+        <div class="emoji-cat-label">🛒 Sprzedaż & E-commerce</div>
+        <div class="emoji-grid">
+          <button class="emoji-btn" onclick="pickEmoji('🛒')">🛒</button>
+          <button class="emoji-btn" onclick="pickEmoji('🏪')">🏪</button>
+          <button class="emoji-btn" onclick="pickEmoji('💳')">💳</button>
+          <button class="emoji-btn" onclick="pickEmoji('💰')">💰</button>
+          <button class="emoji-btn" onclick="pickEmoji('🏷️')">🏷️</button>
+          <button class="emoji-btn" onclick="pickEmoji('📦')">📦</button>
+          <button class="emoji-btn" onclick="pickEmoji('🚚')">🚚</button>
+          <button class="emoji-btn" onclick="pickEmoji('🔖')">🔖</button>
+          <button class="emoji-btn" onclick="pickEmoji('🧾')">🧾</button>
+          <button class="emoji-btn" onclick="pickEmoji('💹')">💹</button>
+        </div>
+        <div class="emoji-cat-label">📣 Marketing & Social</div>
+        <div class="emoji-grid">
+          <button class="emoji-btn" onclick="pickEmoji('📣')">📣</button>
+          <button class="emoji-btn" onclick="pickEmoji('📢')">📢</button>
+          <button class="emoji-btn" onclick="pickEmoji('🎯')">🎯</button>
+          <button class="emoji-btn" onclick="pickEmoji('🎨')">🎨</button>
+          <button class="emoji-btn" onclick="pickEmoji('📸')">📸</button>
+          <button class="emoji-btn" onclick="pickEmoji('🎬')">🎬</button>
+          <button class="emoji-btn" onclick="pickEmoji('✉️')">✉️</button>
+          <button class="emoji-btn" onclick="pickEmoji('📧')">📧</button>
+          <button class="emoji-btn" onclick="pickEmoji('🌐')">🌐</button>
+          <button class="emoji-btn" onclick="pickEmoji('📱')">📱</button>
+        </div>
+        <div class="emoji-cat-label">👥 Ludzie & Zespół</div>
+        <div class="emoji-grid">
+          <button class="emoji-btn" onclick="pickEmoji('👥')">👥</button>
+          <button class="emoji-btn" onclick="pickEmoji('🤝')">🤝</button>
+          <button class="emoji-btn" onclick="pickEmoji('👤')">👤</button>
+          <button class="emoji-btn" onclick="pickEmoji('🏢')">🏢</button>
+          <button class="emoji-btn" onclick="pickEmoji('📅')">📅</button>
+          <button class="emoji-btn" onclick="pickEmoji('🗓️')">🗓️</button>
+          <button class="emoji-btn" onclick="pickEmoji('⏰')">⏰</button>
+          <button class="emoji-btn" onclick="pickEmoji('🔔')">🔔</button>
+          <button class="emoji-btn" onclick="pickEmoji('💬')">💬</button>
+          <button class="emoji-btn" onclick="pickEmoji('📞')">📞</button>
+        </div>
+        <div class="emoji-cat-label">📊 Dane & Raporty</div>
+        <div class="emoji-grid">
+          <button class="emoji-btn" onclick="pickEmoji('🔍')">🔍</button>
+          <button class="emoji-btn" onclick="pickEmoji('📐')">📐</button>
+          <button class="emoji-btn" onclick="pickEmoji('🧮')">🧮</button>
+          <button class="emoji-btn" onclick="pickEmoji('🗺️')">🗺️</button>
+          <button class="emoji-btn" onclick="pickEmoji('📌')">📌</button>
+          <button class="emoji-btn" onclick="pickEmoji('🏆')">🏆</button>
+          <button class="emoji-btn" onclick="pickEmoji('⭐')">⭐</button>
+          <button class="emoji-btn" onclick="pickEmoji('✅')">✅</button>
+          <button class="emoji-btn" onclick="pickEmoji('❗')">❗</button>
+          <button class="emoji-btn" onclick="pickEmoji('💡')">💡</button>
+        </div>
+      </div>
+    </div>
     <div class="fg"><label>Nazwa</label><input type="text" id="lName" placeholder="np. Arkusz zamówień"></div>
     <div class="fg"><label>URL</label><input type="url" id="lUrl" placeholder="https://docs.google.com/..."></div>
     <div class="fg"><label>Opis (opcjonalnie)</label><input type="text" id="lDesc" placeholder="np. Główny arkusz zamówień hurtowych"></div>
