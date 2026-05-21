@@ -910,16 +910,16 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 document.getElementById('searchInput').addEventListener('input', function() {
   const q = this.value.toLowerCase().trim();
   const activeFilter = document.querySelector('.tab-btn.active')?.dataset.filter || 'all';
-  let any = false;
 
-  const grid         = document.getElementById('deptGrid');
-  const routing      = document.getElementById('routingSection');
-  const linksSection = document.getElementById('linksSection');
-  const sr           = document.getElementById('searchLinkResults');
+  // Usuń poprzednie inline wyniki linków
+  const sr = document.getElementById('searchLinkResults');
   if (sr) sr.remove();
 
+  const grid        = document.getElementById('deptGrid');
+  const linksSection = document.getElementById('linksSection');
+
   if (!q) {
-    // Przywróć widok zgodny z aktywnym tabem
+    // Przywróć widok
     document.querySelectorAll('.dept-card').forEach(card => {
       card.classList.toggle('hidden', activeFilter !== 'all' && card.dataset.cat !== activeFilter);
       card.querySelectorAll('.person').forEach(p => p.style.display = '');
@@ -929,60 +929,63 @@ document.getElementById('searchInput').addEventListener('input', function() {
     return;
   }
 
-  // Wyszukiwanie zależne od aktywnego taba
+  if (activeFilter === 'routing') {
+    // Szukaj w tabeli "mam problem" — filtruj wiersze
+    let any = false;
+    document.querySelectorAll('#routingBody tr').forEach(tr => {
+      const vis = tr.textContent.toLowerCase().includes(q);
+      tr.style.display = vis ? '' : 'none';
+      if (vis) any = true;
+    });
+    document.getElementById('noResults').classList.toggle('hidden', any || !q);
+    return;
+  }
+
   if (activeFilter === 'links') {
     // Szukaj tylko w linkach
-    grid.classList.add('hidden');
-    if (linksSection) {
-      linksSection.style.display = '';
-      linksSection.querySelectorAll('.link-card').forEach(lc => {
-        const vis = lc.textContent.toLowerCase().includes(q);
-        lc.style.display = vis ? '' : 'none';
-        if (vis) any = true;
-      });
-    }
-  } else if (activeFilter === 'routing') {
-    // Szukaj tylko w tabeli "mam problem"
-    any = true; // nie filtrujemy tabeli routing
-  } else {
-    // Szukaj w działach (i linkach jeśli "all")
-    grid.classList.remove('hidden');
-    document.querySelectorAll('.dept-card').forEach(card => {
-      if (activeFilter !== 'all' && card.dataset.cat !== activeFilter) {
-        card.classList.add('hidden'); return;
-      }
-      const deptText = (card.querySelector('h2')?.textContent||'') + ' ' + (card.dataset.keywords||'');
-      let cardVisible = false;
-      card.querySelectorAll('.person').forEach(p => {
-        const vis = p.textContent.toLowerCase().includes(q);
-        p.style.display = vis ? '' : 'none';
-        if (vis) cardVisible = true;
-      });
-      if (!cardVisible && deptText.toLowerCase().includes(q)) {
-        card.querySelectorAll('.person').forEach(p => p.style.display = '');
-        cardVisible = true;
-      }
-      card.classList.toggle('hidden', !cardVisible);
-      if (cardVisible) any = true;
+    let any = false;
+    if (linksSection) linksSection.querySelectorAll('.link-card').forEach(lc => {
+      const vis = lc.textContent.toLowerCase().includes(q);
+      lc.style.display = vis ? '' : 'none';
+      if (vis) any = true;
     });
+    document.getElementById('noResults').classList.toggle('hidden', any || !q);
+    return;
+  }
 
-    // Dołącz linki tylko przy "all"
-    if (activeFilter === 'all' && linksSection) {
-      const matching = Array.from(linksSection.querySelectorAll('.link-card'))
-        .filter(lc => lc.textContent.toLowerCase().includes(q));
-      if (matching.length) {
-        any = true;
-        const wrapper = document.createElement('div');
-        wrapper.id = 'searchLinkResults';
-        wrapper.style.cssText = 'display:contents;';
-        matching.forEach(lc => wrapper.appendChild(lc.cloneNode(true)));
-        grid.appendChild(wrapper);
-      }
+  // Szukaj w działach (all / konkretna kategoria)
+  let any = false;
+  document.querySelectorAll('.dept-card').forEach(card => {
+    if (activeFilter !== 'all' && card.dataset.cat !== activeFilter) {
+      card.classList.add('hidden'); return;
     }
+    const deptText = (card.querySelector('h2')?.textContent||'') + ' ' + (card.dataset.keywords||'');
+    let cardVisible = false;
+    card.querySelectorAll('.person').forEach(p => {
+      const vis = p.textContent.toLowerCase().includes(q);
+      p.style.display = vis ? '' : 'none';
+      if (vis) cardVisible = true;
+    });
+    if (!cardVisible && deptText.toLowerCase().includes(q)) {
+      card.querySelectorAll('.person').forEach(p => p.style.display = '');
+      cardVisible = true;
+    }
+    card.classList.toggle('hidden', !cardVisible);
+    if (cardVisible) any = true;
+  });
+
+  // Filtruj linki w sekcji (zostają na miejscu, nie przeskakują)
+  if (linksSection && activeFilter === 'all') {
+    linksSection.querySelectorAll('.link-card').forEach(lc => {
+      const vis = lc.textContent.toLowerCase().includes(q);
+      lc.style.display = vis ? '' : 'none';
+      if (vis) any = true;
+    });
   }
 
   document.getElementById('noResults').classList.toggle('hidden', any || !q);
 });
+
 
 
 
