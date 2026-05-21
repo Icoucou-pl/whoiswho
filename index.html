@@ -169,7 +169,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 }
 
 /* ── LINKS PANEL ── */
-.links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:8px;}
+.links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:8px;width:100%;}
 .link-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--text);transition:transform 0.2s,box-shadow 0.2s,border-color 0.2s;position:relative;cursor:pointer;}
 .link-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.12);}
 .link-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;background:rgba(229,10,119,0.1);}
@@ -221,8 +221,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="admin-pill" data-panel="Depts" onclick="switchPanel(this)">🏢 Działy</button>
   <button class="admin-pill" data-panel="Persons" onclick="switchPanel(this)">👥 Osoby</button>
   <button class="admin-pill" data-panel="Problems" onclick="switchPanel(this)">🗺️ Mam problem</button>
-  <button class="admin-pill" data-panel="Users" onclick="switchPanel(this)">🔑 Użytkownicy</button>
   <button class="admin-pill" data-panel="Links" onclick="switchPanel(this)">🔗 Linki</button>
+  <button class="admin-pill" data-panel="Users" onclick="switchPanel(this)">🔑 Użytkownicy</button>
 </div>
 
 <!-- APP -->
@@ -255,6 +255,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </table>
       <button class="routing-add-btn" onclick="openProblemModal(null)">+ Dodaj sytuację</button>
     </div>
+
+      <!-- LINKS SECTION -->
+      <div class="routing-section" id="linksSection" style="display:none">
+        <h2>Przydatne linki</h2>
+        <p>Narzędzia i zasoby używane w firmie — wszystko w jednym miejscu.</p>
+        <div class="links-grid" id="linksGrid"></div>
+      </div>
   </div>
 
   <!-- PANEL: DEPTS -->
@@ -860,7 +867,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     grid.classList.remove('hidden');
     routing.style.display = f==='all' ? '' : 'none';
     links.style.display   = f==='all' ? '' : 'none';
-    document.querySelectorAll('.dept-card').forEach(c => c.classList.toggle('hidden', f!=='all' && c.dataset.cat!==f));
+    document.querySelectorAll('.dept-card').forEach(card => card.classList.toggle('hidden', f!=='all' && card.dataset.cat!==f));
   });
 });
 
@@ -1013,7 +1020,6 @@ async function doChangePin() {
 // ── LINKS ──
 function renderLinks() {
   const grid = document.getElementById('linksGrid');
-  if (!grid) return;
   const links = S.links || [];
   if (!links.length) {
     grid.innerHTML = '<div class="links-empty">' + (S.role==='admin' ? '🔗 Brak linków. Dodaj pierwszy w panelu administracyjnym.' : '🔗 Administrator nie dodał jeszcze żadnych linków.') + '</div>';
@@ -1037,7 +1043,6 @@ function renderLinks() {
 
 function renderLinksTable() {
   const tbody = document.getElementById('linksBody');
-  if (!tbody) return;
   tbody.innerHTML = (S.links||[]).map(l => `<tr>
     <td>${l.icon||''}</td>
     <td>${esc(l.name)}</td>
