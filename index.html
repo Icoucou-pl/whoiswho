@@ -261,6 +261,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <div class="dept-grid" id="deptGrid"></div>
     <div class="no-results hidden" id="noResults">😕 Brak wyników.</div>
+
+      <!-- LINKS SECTION -->
+      <div class="routing-section" id="linksSection" >
+        <h2>Przydatne linki</h2>
+        <p>Narzędzia i zasoby używane w firmie — wszystko w jednym miejscu.</p>
+        <div class="links-grid" id="linksGrid"></div>
+      </div>
+
     <div class="routing-section" id="routingSection">
       <h2>Mam problem — do kogo iść?</h2>
       <p>Najczęstsze sytuacje nowych pracowników.</p>
@@ -271,12 +279,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="routing-add-btn" onclick="openProblemModal(null)">+ Dodaj sytuację</button>
     </div>
 
-      <!-- LINKS SECTION -->
-      <div class="routing-section" id="linksSection" style="display:none">
-        <h2>Przydatne linki</h2>
-        <p>Narzędzia i zasoby używane w firmie — wszystko w jednym miejscu.</p>
-        <div class="links-grid" id="linksGrid"></div>
-      </div>
   </div>
 
   <!-- PANEL: DEPTS -->
@@ -325,9 +327,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <thead><tr><th>Email</th><th>Rola</th><th>Akcje</th></tr></thead>
       <tbody id="usersBody"></tbody>
     </table>
-  </div>
-
-</div>
 
   <!-- PANEL: LINKS -->
   <div id="panelLinks" class="admin-panel">
@@ -341,7 +340,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </table>
   </div>
 
-</div>
+  </div>
+
+</div></div>
 
 <!-- MODAL: PROFILE -->
 <div class="modal-overlay" id="profileModal">
@@ -875,101 +876,115 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     const f = btn.dataset.filter;
     const routing = document.getElementById('routingSection');
-    const links  = document.getElementById('linksSection');
-    const grid   = document.getElementById('deptGrid');
-    // Wyczyść wyszukiwarkę i przywróć wszystkie osoby
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.value = '';
+    const links   = document.getElementById('linksSection');
+    const grid    = document.getElementById('deptGrid');
+    const si = document.getElementById('searchInput');
+    if (si) si.value = '';
+    const sr = document.getElementById('searchLinkResults');
+    if (sr) sr.remove();
     document.querySelectorAll('.person').forEach(p => p.style.display = '');
-    document.querySelectorAll('.link-card').forEach(lc => lc.style.display = '');
-    if (f==='routing') { grid.classList.add('hidden'); if(links) links.style.display='none'; routing.style.display=''; routing.scrollIntoView({behavior:'smooth',block:'start'}); return; }
-    if (f==='links')   { grid.classList.add('hidden'); routing.style.display='none'; if(links) links.style.display=''; if(links) links.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+
+    if (f === 'routing') {
+      grid.classList.add('hidden');
+      if (links) links.style.display = 'none';
+      routing.style.display = '';
+      routing.scrollIntoView({behavior:'smooth', block:'start'});
+      return;
+    }
+    if (f === 'links') {
+      grid.classList.add('hidden');
+      routing.style.display = 'none';
+      if (links) { links.style.display = ''; links.scrollIntoView({behavior:'smooth', block:'start'}); }
+      return;
+    }
+    // Dla wszystkich pozostałych zakładek (all, kierownictwo, klient, produkt, operacje)
     grid.classList.remove('hidden');
-    routing.style.display = f==='all' ? '' : 'none';
-    if(links) links.style.display = f==='all' ? '' : 'none';
-    document.querySelectorAll('.dept-card').forEach(card => card.classList.toggle('hidden', f!=='all' && card.dataset.cat!==f));
+    routing.style.display = f === 'all' ? '' : 'none';
+    // Linki widoczne TYLKO przy "all"
+    if (links) links.style.display = f === 'all' ? '' : 'none';
+    document.querySelectorAll('.dept-card').forEach(card => card.classList.toggle('hidden', f !== 'all' && card.dataset.cat !== f));
   });
 });
 
+
 document.getElementById('searchInput').addEventListener('input', function() {
   const q = this.value.toLowerCase().trim();
+  const activeFilter = document.querySelector('.tab-btn.active')?.dataset.filter || 'all';
   let any = false;
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelector('[data-filter="all"]').classList.add('active');
 
-  const grid        = document.getElementById('deptGrid');
-  const routing     = document.getElementById('routingSection');
+  const grid         = document.getElementById('deptGrid');
+  const routing      = document.getElementById('routingSection');
   const linksSection = document.getElementById('linksSection');
+  const sr           = document.getElementById('searchLinkResults');
+  if (sr) sr.remove();
 
   if (!q) {
-    // Brak wyszukiwania — przywróć normalny widok
-    grid.classList.remove('hidden');
-    routing.style.display = '';
-    if (linksSection) linksSection.style.display = '';
+    // Przywróć widok zgodny z aktywnym tabem
     document.querySelectorAll('.dept-card').forEach(card => {
-      card.classList.remove('hidden');
+      card.classList.toggle('hidden', activeFilter !== 'all' && card.dataset.cat !== activeFilter);
       card.querySelectorAll('.person').forEach(p => p.style.display = '');
     });
     if (linksSection) linksSection.querySelectorAll('.link-card').forEach(lc => lc.style.display = '');
-    // Przywróć linksSection na oryginalne miejsce jeśli był przeniesiony
-    const searchResults = document.getElementById('searchLinkResults');
-    if (searchResults) searchResults.remove();
     document.getElementById('noResults').classList.add('hidden');
     return;
   }
 
-  grid.classList.remove('hidden');
-  routing.style.display = '';
-  if (linksSection) linksSection.style.display = 'none'; // schowaj oryginał na dole
-
-  // Filtruj działy
-  document.querySelectorAll('.dept-card').forEach(card => {
-    const deptText = (card.querySelector('h2')?.textContent||'') + ' ' + (card.dataset.keywords||'');
-    let cardVisible = false;
-    card.querySelectorAll('.person').forEach(p => {
-      const vis = p.textContent.toLowerCase().includes(q);
-      p.style.display = vis ? '' : 'none';
-      if (vis) cardVisible = true;
+  // Wyszukiwanie zależne od aktywnego taba
+  if (activeFilter === 'links') {
+    // Szukaj tylko w linkach
+    grid.classList.add('hidden');
+    if (linksSection) {
+      linksSection.style.display = '';
+      linksSection.querySelectorAll('.link-card').forEach(lc => {
+        const vis = lc.textContent.toLowerCase().includes(q);
+        lc.style.display = vis ? '' : 'none';
+        if (vis) any = true;
+      });
+    }
+  } else if (activeFilter === 'routing') {
+    // Szukaj tylko w tabeli "mam problem"
+    any = true; // nie filtrujemy tabeli routing
+  } else {
+    // Szukaj w działach (i linkach jeśli "all")
+    grid.classList.remove('hidden');
+    document.querySelectorAll('.dept-card').forEach(card => {
+      if (activeFilter !== 'all' && card.dataset.cat !== activeFilter) {
+        card.classList.add('hidden'); return;
+      }
+      const deptText = (card.querySelector('h2')?.textContent||'') + ' ' + (card.dataset.keywords||'');
+      let cardVisible = false;
+      card.querySelectorAll('.person').forEach(p => {
+        const vis = p.textContent.toLowerCase().includes(q);
+        p.style.display = vis ? '' : 'none';
+        if (vis) cardVisible = true;
+      });
+      if (!cardVisible && deptText.toLowerCase().includes(q)) {
+        card.querySelectorAll('.person').forEach(p => p.style.display = '');
+        cardVisible = true;
+      }
+      card.classList.toggle('hidden', !cardVisible);
+      if (cardVisible) any = true;
     });
 
-
-  // Filtruj linki i wstaw wyniki inline w gridzie
-  let searchResults = document.getElementById('searchLinkResults');
-  if (linksSection) {
-    const matchingLinks = Array.from(linksSection.querySelectorAll('.link-card'))
-      .filter(lc => lc.textContent.toLowerCase().includes(q));
-    if (matchingLinks.length) {
-      any = true;
-      if (!searchResults) {
-        searchResults = document.createElement('div');
-        searchResults.id = 'searchLinkResults';
-        searchResults.style.cssText = 'grid-column:1/-1;display:contents;';
-        grid.appendChild(searchResults);
+    // Dołącz linki tylko przy "all"
+    if (activeFilter === 'all' && linksSection) {
+      const matching = Array.from(linksSection.querySelectorAll('.link-card'))
+        .filter(lc => lc.textContent.toLowerCase().includes(q));
+      if (matching.length) {
+        any = true;
+        const wrapper = document.createElement('div');
+        wrapper.id = 'searchLinkResults';
+        wrapper.style.cssText = 'display:contents;';
+        matching.forEach(lc => wrapper.appendChild(lc.cloneNode(true)));
+        grid.appendChild(wrapper);
       }
-      searchResults.innerHTML = '';
-      matchingLinks.forEach(lc => {
-        const clone = lc.cloneNode(true);
-        // Przepnij event handlery na klon
-        clone.querySelectorAll('button').forEach((btn, i) => {
-          const orig = lc.querySelectorAll('button')[i];
-          if (orig) btn.onclick = orig.onclick;
-        });
-        searchResults.appendChild(clone);
-      });
-    } else if (searchResults) {
-      searchResults.remove();
     }
   }
 
   document.getElementById('noResults').classList.toggle('hidden', any || !q);
 });
-    if (!cardVisible && deptText.toLowerCase().includes(q)) {
-      card.querySelectorAll('.person').forEach(p => p.style.display = '');
-      cardVisible = true;
-    }
-    card.classList.toggle('hidden', !cardVisible);
-    if (cardVisible) any = true;
-  });
+
+
 
 
 function toggleCard(h) { h.closest('.dept-card').classList.toggle('open'); }
