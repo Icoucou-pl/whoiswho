@@ -896,19 +896,34 @@ document.getElementById('searchInput').addEventListener('input', function() {
   let any = false;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('[data-filter="all"]').classList.add('active');
-  document.getElementById('deptGrid').classList.remove('hidden');
-  document.getElementById('routingSection').style.display = '';
-  const linksSection = document.getElementById('linksSection');
-  if (linksSection) linksSection.style.display = '';
 
-  // Filtruj działy — pokaż tylko pasujące osoby
-  document.querySelectorAll('.dept-card').forEach(card => {
-    if (!q) {
+  const grid        = document.getElementById('deptGrid');
+  const routing     = document.getElementById('routingSection');
+  const linksSection = document.getElementById('linksSection');
+
+  if (!q) {
+    // Brak wyszukiwania — przywróć normalny widok
+    grid.classList.remove('hidden');
+    routing.style.display = '';
+    if (linksSection) linksSection.style.display = '';
+    document.querySelectorAll('.dept-card').forEach(card => {
       card.classList.remove('hidden');
       card.querySelectorAll('.person').forEach(p => p.style.display = '');
-      any = true;
-      return;
-    }
+    });
+    if (linksSection) linksSection.querySelectorAll('.link-card').forEach(lc => lc.style.display = '');
+    // Przywróć linksSection na oryginalne miejsce jeśli był przeniesiony
+    const searchResults = document.getElementById('searchLinkResults');
+    if (searchResults) searchResults.remove();
+    document.getElementById('noResults').classList.add('hidden');
+    return;
+  }
+
+  grid.classList.remove('hidden');
+  routing.style.display = '';
+  if (linksSection) linksSection.style.display = 'none'; // schowaj oryginał na dole
+
+  // Filtruj działy
+  document.querySelectorAll('.dept-card').forEach(card => {
     const deptText = (card.querySelector('h2')?.textContent||'') + ' ' + (card.dataset.keywords||'');
     let cardVisible = false;
     card.querySelectorAll('.person').forEach(p => {
@@ -916,6 +931,38 @@ document.getElementById('searchInput').addEventListener('input', function() {
       p.style.display = vis ? '' : 'none';
       if (vis) cardVisible = true;
     });
+
+
+  // Filtruj linki i wstaw wyniki inline w gridzie
+  let searchResults = document.getElementById('searchLinkResults');
+  if (linksSection) {
+    const matchingLinks = Array.from(linksSection.querySelectorAll('.link-card'))
+      .filter(lc => lc.textContent.toLowerCase().includes(q));
+    if (matchingLinks.length) {
+      any = true;
+      if (!searchResults) {
+        searchResults = document.createElement('div');
+        searchResults.id = 'searchLinkResults';
+        searchResults.style.cssText = 'grid-column:1/-1;display:contents;';
+        grid.appendChild(searchResults);
+      }
+      searchResults.innerHTML = '';
+      matchingLinks.forEach(lc => {
+        const clone = lc.cloneNode(true);
+        // Przepnij event handlery na klon
+        clone.querySelectorAll('button').forEach((btn, i) => {
+          const orig = lc.querySelectorAll('button')[i];
+          if (orig) btn.onclick = orig.onclick;
+        });
+        searchResults.appendChild(clone);
+      });
+    } else if (searchResults) {
+      searchResults.remove();
+    }
+  }
+
+  document.getElementById('noResults').classList.toggle('hidden', any || !q);
+});
     if (!cardVisible && deptText.toLowerCase().includes(q)) {
       card.querySelectorAll('.person').forEach(p => p.style.display = '');
       cardVisible = true;
@@ -924,17 +971,6 @@ document.getElementById('searchInput').addEventListener('input', function() {
     if (cardVisible) any = true;
   });
 
-  // Filtruj linki
-  if (linksSection) {
-    linksSection.querySelectorAll('.link-card').forEach(lc => {
-      const vis = !q || lc.textContent.toLowerCase().includes(q);
-      lc.style.display = vis ? '' : 'none';
-      if (vis) any = true;
-    });
-  }
-
-  document.getElementById('noResults').classList.toggle('hidden', any || !q);
-});
 
 function toggleCard(h) { h.closest('.dept-card').classList.toggle('open'); }
 
