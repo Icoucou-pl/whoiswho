@@ -196,6 +196,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .emoji-btn{background:none;border:1px solid transparent;border-radius:6px;padding:5px 6px;font-size:1.15rem;cursor:pointer;transition:background 0.15s,border 0.15s;line-height:1;}
 .emoji-btn:hover{background:rgba(255,255,255,0.08);border-color:var(--border);}
 
+
+/* ── SUBSCRIPTIONS ── */
+.sub-summary{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px;}
+.sub-stat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 22px;flex:1;min-width:160px;}
+.sub-stat-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:4px;}
+.sub-stat-value{font-size:1.4rem;font-weight:700;color:var(--text-heading);}
+.sub-stat-value span{font-size:0.8rem;color:var(--text-muted);font-weight:400;margin-left:4px;}
+.sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.sub-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;transition:transform 0.2s,box-shadow 0.2s;}
+.sub-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.3);}
+.sub-card-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.sub-card-icon{width:40px;height:40px;border-radius:10px;background:rgba(229,10,119,0.1);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.sub-card-name{font-weight:700;font-size:0.95rem;color:var(--text-heading);}
+.sub-card-cat{font-size:0.75rem;color:var(--text-muted);margin-top:1px;}
+.sub-card-cost{font-size:1.1rem;font-weight:700;color:var(--teal);margin-bottom:2px;}
+.sub-card-cycle{font-size:0.75rem;color:var(--text-muted);}
+.sub-card-meta{display:flex;flex-direction:column;gap:4px;margin-top:10px;font-size:0.78rem;color:var(--text-muted);}
+.sub-card-meta span{display:flex;align-items:center;gap:5px;}
+.sub-card-link{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:0.78rem;color:var(--teal);text-decoration:none;}
+.sub-card-link:hover{text-decoration:underline;}
+.sub-card-btns{position:absolute;top:10px;right:10px;display:flex;gap:4px;opacity:0;transition:opacity 0.2s;}
+.sub-card:hover .sub-card-btns{opacity:1;}
+.status-badge{display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;padding:2px 9px;border-radius:20px;font-weight:600;margin-top:8px;}
+.status-aktywna{background:rgba(39,174,96,0.15);color:#2ecc71;}
+.status-sprawdzic{background:rgba(245,166,35,0.15);color:#f5a623;}
+.status-anulowac{background:rgba(233,69,96,0.15);color:#e94560;}
+.sub-section{margin-top:8px;}
+.sub-section h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--text-heading);text-align:center;margin-bottom:6px;}
+.sub-section>p{text-align:center;color:var(--text-muted);margin-bottom:24px;font-size:0.88rem;}
+
 </style>
 </head>
 <body>
@@ -237,6 +267,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="admin-pill" data-panel="Persons" onclick="switchPanel(this)">👥 Osoby</button>
   <button class="admin-pill" data-panel="Problems" onclick="switchPanel(this)">🗺️ Mam problem</button>
   <button class="admin-pill" data-panel="Links" onclick="switchPanel(this)">🔗 Linki</button>
+  <button class="admin-pill" data-panel="Subs" onclick="switchPanel(this)">💳 Subskrypcje & Narzędzia</button>
   <button class="admin-pill" data-panel="Users" onclick="switchPanel(this)">🔑 Użytkownicy</button>
 </div>
 
@@ -254,6 +285,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="tab-btn" data-filter="operacje">Operacje</button>
       <button class="tab-btn" data-filter="routing">🗺️ Mam problem…</button>
         <button class="tab-btn" data-filter="links">🔗 Przydatne linki</button>
+        <button class="tab-btn" data-filter="subs">💳 Subskrypcje & Narzędzia</button>
     </div>
     <div class="search-wrap">
       <span class="si">🔍</span>
@@ -266,6 +298,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <div class="dept-grid" id="deptGrid"></div>
     <div class="no-results hidden" id="noResults">😕 Brak wyników.</div>
+
+      <!-- SUBS SECTION -->
+      <div class="sub-section" id="subsSection" style="display:none">
+        <h2>Subskrypcje & Narzędzia</h2>
+        <p>Wszystkie opłacane narzędzia i subskrypcje firmy w jednym miejscu.</p>
+        <div class="sub-summary" id="subSummary"></div>
+        <div class="sub-grid" id="subsGrid"></div>
+      </div>
 
       <!-- LINKS SECTION -->
       <div class="routing-section" id="linksSection" >
@@ -343,6 +383,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <table class="data-table">
       <thead><tr><th>Ikona</th><th>Nazwa</th><th>URL</th><th>Opis</th><th>Akcje</th></tr></thead>
       <tbody id="linksBody"></tbody>
+    </table>
+  </div>
+
+
+  <!-- PANEL: SUBS -->
+  <div id="panelSubs" class="admin-panel">
+    <div class="panel-header">
+      <h2>Subskrypcje & Narzędzia</h2>
+      <button class="btn-add" onclick="openSubModal(null)">+ Nowa subskrypcja</button>
+    </div>
+    <table class="data-table" id="subsTable">
+      <thead><tr><th>Ikona</th><th>Nazwa</th><th>Kategoria</th><th>Koszt</th><th>Cykl</th><th>Następna płatność</th><th>Kto płaci</th><th>Status</th><th>Akcje</th></tr></thead>
+      <tbody id="subsBody"></tbody>
     </table>
   </div>
 
@@ -469,7 +522,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbxv014WCoQOfV9-HsovZXpSclJ9LNoR45BgdCI9gz9uE1dqnsjLg3XThmHI64sSD2UT7g/exec';
 const LS_TOKEN = 'ksiega_token';
-let S = { profiles:[], depts:[], problems:[], users:[], role:null, email:null, myProfileId:null };
+let S = { profiles:[], depts:[], problems:[], users:[], role:null, email:null, myProfileId:null, permissions:'' };
 
 // ── BOOT ──
 window.addEventListener('load', async () => {
@@ -564,6 +617,7 @@ function renderAll() {
   renderDepts();
   renderProblems();
   renderLinks();
+  renderSubs();
   if (S.role === 'admin') {
     renderDeptsTable();
     renderPersonsTable();
@@ -903,7 +957,18 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
       grid.classList.add('hidden');
       routing.style.display = 'none';
       if (toggleBtn) toggleBtn.parentElement.style.display = 'none';
+      const subsHide = document.getElementById('subsSection');
+      if (subsHide) subsHide.style.display = 'none';
       if (links) { links.style.display = ''; links.scrollIntoView({behavior:'smooth', block:'start'}); }
+      return;
+    }
+    if (f === 'subs') {
+      grid.classList.add('hidden');
+      routing.style.display = 'none';
+      if (links) links.style.display = 'none';
+      if (toggleBtn) toggleBtn.parentElement.style.display = 'none';
+      const subsShow = document.getElementById('subsSection');
+      if (subsShow) { subsShow.style.display = ''; subsShow.scrollIntoView({behavior:'smooth', block:'start'}); }
       return;
     }
     // Dla wszystkich pozostałych zakładek (all, kierownictwo, klient, produkt, operacje)
@@ -911,6 +976,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     if (toggleBtn) toggleBtn.parentElement.style.display = '';
     routing.style.display = f === 'all' ? '' : 'none';
     if (links) links.style.display = f === 'all' ? '' : 'none';
+    const subsEl = document.getElementById('subsSection');
+    if (subsEl) subsEl.style.display = 'none';
     document.querySelectorAll('.dept-card').forEach(card => card.classList.toggle('hidden', f !== 'all' && card.dataset.cat !== f));
   });
 });
@@ -955,6 +1022,18 @@ document.getElementById('searchInput').addEventListener('input', function() {
     if (linksSection) linksSection.querySelectorAll('.link-card').forEach(lc => {
       const vis = lc.textContent.toLowerCase().includes(q);
       lc.style.display = vis ? '' : 'none';
+      if (vis) any = true;
+    });
+    document.getElementById('noResults').classList.toggle('hidden', any || !q);
+    return;
+  }
+
+  if (activeFilter === 'subs') {
+    let any = false;
+    const subsGrid = document.getElementById('subsGrid');
+    if (subsGrid) subsGrid.querySelectorAll('.sub-card').forEach(card => {
+      const vis = card.textContent.toLowerCase().includes(q);
+      card.style.display = vis ? '' : 'none';
       if (vis) any = true;
     });
     document.getElementById('noResults').classList.toggle('hidden', any || !q);
@@ -1034,6 +1113,7 @@ function switchPanel(btn) {
   document.getElementById('panel'+p).classList.add('active');
   // Odśwież tabelę przy przełączeniu
   if (p === 'Links')    renderLinksTable();
+  if (p === 'Subs')     renderSubsTable();
   if (p === 'Depts')    renderDeptsTable();
   if (p === 'Persons')  renderPersonsTable();
   if (p === 'Problems') renderProblemsTable();
@@ -1245,7 +1325,141 @@ document.addEventListener('click', e => {
   if (picker && !e.target.closest('.emoji-field')) {
     picker.classList.remove('open');
   }
+
 });
+
+// ── SUBSCRIPTIONS ──
+function renderSubs() {
+  const grid = document.getElementById('subsGrid');
+  if (!grid) return;
+  const subs = S.subs || [];
+  const summary = document.getElementById('subSummary');
+
+  // Podsumowanie kosztów
+  let monthly = 0, yearly = 0;
+  subs.filter(s => s.status !== 'anulowac').forEach(s => {
+    const cost = parseFloat(String(s.cost||'').replace(/[^0-9.,]/g,'').replace(',','.')) || 0;
+    if (s.cycle === 'miesięcznie') { monthly += cost; yearly += cost * 12; }
+    else if (s.cycle === 'rocznie') { monthly += cost / 12; yearly += cost; }
+    else if (s.cycle === 'kwartalnie') { monthly += cost / 3; yearly += cost * 4; }
+  });
+  if (summary) {
+    if (S.role === 'admin' || canEditSubs()) {
+      summary.style.display = '';
+      summary.innerHTML = `
+        <div class="sub-stat"><div class="sub-stat-label">💳 Aktywne subskrypcje</div><div class="sub-stat-value">${subs.filter(s=>s.status==='aktywna').length} <span>narzędzi</span></div></div>
+        <div class="sub-stat"><div class="sub-stat-label">📅 Koszt miesięczny</div><div class="sub-stat-value">${monthly.toFixed(0)} <span>PLN/mies</span></div></div>
+        <div class="sub-stat"><div class="sub-stat-label">📆 Koszt roczny</div><div class="sub-stat-value">${yearly.toFixed(0)} <span>PLN/rok</span></div></div>
+        <div class="sub-stat"><div class="sub-stat-label">⚠️ Do sprawdzenia</div><div class="sub-stat-value">${subs.filter(s=>s.status==='sprawdzic').length} <span>pozycji</span></div></div>
+      `;
+    } else {
+      summary.style.display = 'none';
+    }
+  }
+
+  if (!subs.length) {
+    grid.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px;grid-column:1/-1">' + (S.role==='admin' ? '💳 Brak subskrypcji. Dodaj pierwszą powyżej.' : 'Brak subskrypcji.') + '</p>';
+    return;
+  }
+
+  const statusLabels = { aktywna: '✅ Aktywna', sprawdzic: '⚠️ Do sprawdzenia', anulowac: '❌ Anulowano' };
+  const isAdmin = S.role === 'admin';
+  const canEdit = canEditSubs();
+  grid.innerHTML = subs.map(s => {
+    const adminBtns = canEdit ? `<div class="sub-card-btns"><button class="btn-icon" onclick="openSubModal('${s.id}')">✏️</button><button class="btn-icon danger" onclick="deleteSubConfirm('${s.id}')">🗑️</button></div>` : '';
+    const rawDate = s.next_date ? String(s.next_date).split('T')[0] : '';
+    if (!canEdit) {
+      return `<div class="sub-card">
+        <div class="sub-card-top">
+          <div class="sub-card-icon">💳</div>
+          <div><div class="sub-card-name">${esc(s.name)}</div><div class="sub-card-cat">${esc(s.category||'')}</div></div>
+        </div>
+        <span class="status-badge status-${s.status||'aktywna'}">${statusLabels[s.status||'aktywna']||s.status}</span>
+      </div>`;
+    }
+    const nextDate = rawDate ? `<span>📅 Następna płatność: <strong>${rawDate}</strong></span>` : '';
+    const who = s.who ? `<span>👤 Płaci: ${esc(s.who)}</span>` : '';
+    const notes = s.notes ? `<div style="font-size:0.77rem;color:var(--text-muted);margin-top:8px;font-style:italic">${esc(s.notes)}</div>` : '';
+    const link = s.url ? `<a class="sub-card-link" href="${esc(s.url)}" target="_blank">🔗 Panel / logowanie ↗</a>` : '';
+    return `<div class="sub-card">
+      ${adminBtns}
+      <div class="sub-card-top">
+        <div class="sub-card-icon">💳</div>
+        <div><div class="sub-card-name">${esc(s.name)}</div><div class="sub-card-cat">${esc(s.category||'')}</div></div>
+      </div>
+      <div class="sub-card-cost">${esc(s.cost||'—')}${s.cost && !String(s.cost).toLowerCase().includes('pln') && !String(s.cost).includes('$') && !String(s.cost).includes('€') ? ' PLN' : ''}</div>
+      <div class="sub-card-cycle">${s.cycle||''}</div>
+      <span class="status-badge status-${s.status||'aktywna'}">${statusLabels[s.status||'aktywna']||s.status}</span>
+      <div class="sub-card-meta">${nextDate}${who}</div>
+      ${notes}${link}
+    </div>`;
+  }).join('');
+}
+
+function renderSubsTable() {
+  const tbody = document.getElementById('subsBody');
+  if (!tbody) return;
+  const statusLabels = { aktywna: '✅ Aktywna', sprawdzic: '⚠️ Do sprawdzenia', anulowac: '❌ Anulowano' };
+  tbody.innerHTML = (S.subs||[]).map(s => `<tr>
+    <td>💳</td>
+    <td>${esc(s.name)}</td>
+    <td>${esc(s.category||'')}</td>
+    <td style="color:var(--teal);font-weight:600">${esc(s.cost||'')}</td>
+    <td>${esc(s.cycle||'')}</td>
+    <td>${esc(String(s.next_date||'').split('T')[0])}</td>
+    <td>${esc(s.who||'')}</td>
+    <td>${statusLabels[s.status||'aktywna']||s.status}</td>
+    <td><button class="btn-icon" onclick="openSubModal('${s.id}')">✏️</button> <button class="btn-icon danger" onclick="deleteSubConfirm('${s.id}')">🗑️</button></td>
+  </tr>`).join('');
+}
+
+function openSubModal(id) {
+  const s = id ? (S.subs||[]).find(x=>x.id===id) : null;
+  document.getElementById('subModalTitle').textContent = s ? 'Edytuj subskrypcję' : 'Nowa subskrypcja';
+  document.getElementById('sId').value       = s ? s.id         : '';
+  document.getElementById('sName').value     = s ? s.name       : '';
+  document.getElementById('sCat').value      = s ? (s.category||'') : '';
+  document.getElementById('sCost').value     = s ? (s.cost||'') : '';
+  document.getElementById('sCycle').value    = s ? (s.cycle||'miesięcznie') : 'miesięcznie';
+  document.getElementById('sNextDate').value = s ? (s.next_date||'') : '';
+  document.getElementById('sWho').value      = s ? (s.who||'')  : '';
+  document.getElementById('sStatus').value   = s ? (s.status||'aktywna') : 'aktywna';
+  document.getElementById('sUrl').value      = s ? (s.url||'')  : '';
+  document.getElementById('sNotes').value    = s ? (s.notes||'') : '';
+  openModal('subModal');
+}
+
+async function saveSub() {
+  const res = await apiPost({
+    action:    'saveSub',
+    token:     localStorage.getItem(LS_TOKEN),
+    id:        document.getElementById('sId').value,
+    name:      document.getElementById('sName').value.trim(),
+    category:  document.getElementById('sCat').value.trim(),
+    cost:      document.getElementById('sCost').value.trim(),
+    cycle:     document.getElementById('sCycle').value,
+    next_date: document.getElementById('sNextDate').value,
+    who:       document.getElementById('sWho').value.trim(),
+    status:    document.getElementById('sStatus').value,
+    url:       document.getElementById('sUrl').value.trim(),
+    notes:     document.getElementById('sNotes').value.trim(),
+  });
+  if (res && res.ok) { closeModal('subModal'); toast('✅ Subskrypcja zapisana!'); await loadAll(); }
+  else toast(res?.error||'Błąd', true);
+}
+
+async function deleteSubConfirm(id) {
+  if (!confirm('Usunąć tę subskrypcję?')) return;
+  const res = await apiPost({ action:'deleteSub', token:localStorage.getItem(LS_TOKEN), id });
+  if (res && res.ok) { toast('Usunięto'); await loadAll(); }
+  else toast(res?.error||'Błąd', true);
+}
+
+
+
+function canEditSubs() {
+  return S.role === 'admin' || (S.permissions||'').split(',').map(p=>p.trim()).includes('subs');
+}
 </script>
 
 
@@ -1379,6 +1593,36 @@ document.addEventListener('click', e => {
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('linkModal')">Anuluj</button>
       <button class="btn-primary" onclick="saveLink()">💾 Zapisz</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: SUB -->
+<div class="modal-overlay" id="subModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('subModal')">✕</button>
+    <h3 id="subModalTitle">Nowa subskrypcja</h3>
+    <input type="hidden" id="sId">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;">
+      
+      <div class="fg"><label>Nazwa</label><input type="text" id="sName" placeholder="np. Shopify"></div>
+      <div class="fg"><label>Kategoria</label><input type="text" id="sCat" placeholder="np. E-commerce"></div>
+      <div class="fg"><label>Koszt</label><input type="text" id="sCost" placeholder="np. 99 PLN"></div>
+      <div class="fg"><label>Cykl</label>
+        <select id="sCycle"><option value="miesięcznie">miesięcznie</option><option value="rocznie">rocznie</option><option value="jednorazowo">jednorazowo</option><option value="kwartalnie">kwartalnie</option></select>
+      </div>
+      <div class="fg"><label>Następna płatność</label><input type="date" id="sNextDate" style="color-scheme:dark"></div>
+      <div class="fg"><label>Kto płaci</label><input type="text" id="sWho" placeholder="np. karta firmowa"></div>
+      <div class="fg"><label>Status</label>
+        <select id="sStatus"><option value="aktywna">✅ Aktywna</option><option value="sprawdzic">⚠️ Do sprawdzenia</option><option value="anulowac">❌ Anulowano</option></select>
+      </div>
+    </div>
+    <div class="fg"><label>Link do panelu/logowania</label><input type="url" id="sUrl" placeholder="https://..."></div>
+    <div class="fg"><label>Notatki</label><textarea id="sNotes" placeholder="Dodatkowe informacje, dane logowania, kontakt..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('subModal')">Anuluj</button>
+      <button class="btn-primary" onclick="saveSub()">💾 Zapisz</button>
     </div>
   </div>
 </div>
