@@ -58,7 +58,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .si{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;}
 
 .dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px;}
-.dept-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;animation:fadeUp 0.4s ease both;}
+.dept-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:transform 0.2s,box-shadow 0.2s,max-height 0.4s;animation:fadeUp 0.4s ease both;}
 .dept-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.3);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 .dept-header{padding:16px 20px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border);}
@@ -69,8 +69,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .dept-card.open .arrow{transform:rotate(180deg);}
 .dept-mission{overflow:hidden;max-height:200px;}
 .dept-mission p{padding:10px 20px 4px;font-size:0.82rem;color:var(--text-muted);font-style:italic;}
-.dept-body{padding:10px 20px 14px;overflow:hidden;max-height:0;transition:max-height 0.4s ease;}
-.dept-card.open .dept-body{max-height:2000px;}
+.dept-body{padding:0 20px;overflow:hidden;max-height:0;transition:max-height 0.4s ease,padding 0.4s ease;}
+.dept-card.open .dept-body{max-height:2000px;padding:10px 20px 14px;}
 
 .person{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);position:relative;}
 .person:last-child{border-bottom:none;}
@@ -889,23 +889,26 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     if (sr) sr.remove();
     document.querySelectorAll('.person').forEach(p => p.style.display = '');
 
+    const toggleBtn = document.getElementById('btnToggleAll');
     if (f === 'routing') {
       grid.classList.add('hidden');
       if (links) links.style.display = 'none';
       routing.style.display = '';
+      if (toggleBtn) toggleBtn.parentElement.style.display = 'none';
       routing.scrollIntoView({behavior:'smooth', block:'start'});
       return;
     }
     if (f === 'links') {
       grid.classList.add('hidden');
       routing.style.display = 'none';
+      if (toggleBtn) toggleBtn.parentElement.style.display = 'none';
       if (links) { links.style.display = ''; links.scrollIntoView({behavior:'smooth', block:'start'}); }
       return;
     }
     // Dla wszystkich pozostałych zakładek (all, kierownictwo, klient, produkt, operacje)
     grid.classList.remove('hidden');
+    if (toggleBtn) toggleBtn.parentElement.style.display = '';
     routing.style.display = f === 'all' ? '' : 'none';
-    // Linki widoczne TYLKO przy "all"
     if (links) links.style.display = f === 'all' ? '' : 'none';
     document.querySelectorAll('.dept-card').forEach(card => card.classList.toggle('hidden', f !== 'all' && card.dataset.cat !== f));
   });
@@ -1028,6 +1031,12 @@ function switchPanel(btn) {
   const p = btn.dataset.panel;
   document.querySelectorAll('.admin-panel').forEach(el=>el.classList.remove('active'));
   document.getElementById('panel'+p).classList.add('active');
+  // Odśwież tabelę przy przełączeniu
+  if (p === 'Links')    renderLinksTable();
+  if (p === 'Depts')    renderDeptsTable();
+  if (p === 'Persons')  renderPersonsTable();
+  if (p === 'Problems') renderProblemsTable();
+  if (p === 'Users')    renderUsersTable();
 }
 
 // ── MODAL HELPERS ──
