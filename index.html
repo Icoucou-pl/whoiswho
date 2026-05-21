@@ -259,6 +259,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <span class="si">🔍</span>
       <input type="text" id="searchInput" placeholder="Szukaj osoby, działu lub tematu…">
     </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+      <button onclick="toggleAllCards()" id="btnToggleAll" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:7px 16px;border-radius:40px;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:500;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+        ▶ Rozwiń wszystkie
+      </button>
+    </div>
     <div class="dept-grid" id="deptGrid"></div>
     <div class="no-results hidden" id="noResults">😕 Brak wyników.</div>
 
@@ -911,26 +916,26 @@ document.getElementById('searchInput').addEventListener('input', function() {
   const q = this.value.toLowerCase().trim();
   const activeFilter = document.querySelector('.tab-btn.active')?.dataset.filter || 'all';
 
-  // Usuń poprzednie inline wyniki linków
   const sr = document.getElementById('searchLinkResults');
   if (sr) sr.remove();
 
-  const grid        = document.getElementById('deptGrid');
+  const grid         = document.getElementById('deptGrid');
   const linksSection = document.getElementById('linksSection');
+  const routing      = document.getElementById('routingSection');
 
   if (!q) {
-    // Przywróć widok
     document.querySelectorAll('.dept-card').forEach(card => {
       card.classList.toggle('hidden', activeFilter !== 'all' && card.dataset.cat !== activeFilter);
       card.querySelectorAll('.person').forEach(p => p.style.display = '');
     });
     if (linksSection) linksSection.querySelectorAll('.link-card').forEach(lc => lc.style.display = '');
+    if (routing) routing.style.display = activeFilter === 'all' || activeFilter === 'routing' ? '' : 'none';
+    document.querySelectorAll('#routingBody tr').forEach(tr => tr.style.display = '');
     document.getElementById('noResults').classList.add('hidden');
     return;
   }
 
   if (activeFilter === 'routing') {
-    // Szukaj w tabeli "mam problem" — filtruj wiersze
     let any = false;
     document.querySelectorAll('#routingBody tr').forEach(tr => {
       const vis = tr.textContent.toLowerCase().includes(q);
@@ -942,7 +947,6 @@ document.getElementById('searchInput').addEventListener('input', function() {
   }
 
   if (activeFilter === 'links') {
-    // Szukaj tylko w linkach
     let any = false;
     if (linksSection) linksSection.querySelectorAll('.link-card').forEach(lc => {
       const vis = lc.textContent.toLowerCase().includes(q);
@@ -953,7 +957,9 @@ document.getElementById('searchInput').addEventListener('input', function() {
     return;
   }
 
-  // Szukaj w działach (all / konkretna kategoria)
+  // Działy (all / konkretna kategoria) — ukryj routing i linki podczas szukania
+  if (routing) routing.style.display = 'none';
+
   let any = false;
   document.querySelectorAll('.dept-card').forEach(card => {
     if (activeFilter !== 'all' && card.dataset.cat !== activeFilter) {
@@ -974,13 +980,16 @@ document.getElementById('searchInput').addEventListener('input', function() {
     if (cardVisible) any = true;
   });
 
-  // Filtruj linki w sekcji (zostają na miejscu, nie przeskakują)
+  // Filtruj linki na miejscu (tylko przy 'all')
   if (linksSection && activeFilter === 'all') {
+    linksSection.style.display = '';
     linksSection.querySelectorAll('.link-card').forEach(lc => {
       const vis = lc.textContent.toLowerCase().includes(q);
       lc.style.display = vis ? '' : 'none';
       if (vis) any = true;
     });
+  } else if (linksSection) {
+    linksSection.style.display = 'none';
   }
 
   document.getElementById('noResults').classList.toggle('hidden', any || !q);
@@ -990,7 +999,28 @@ document.getElementById('searchInput').addEventListener('input', function() {
 
 
 
-function toggleCard(h) { h.closest('.dept-card').classList.toggle('open'); }
+
+function toggleAllCards() {
+  const cards = document.querySelectorAll('.dept-card:not(.hidden)');
+  const anyOpen = Array.from(cards).some(c => c.classList.contains('open'));
+  const btn = document.getElementById('btnToggleAll');
+  if (anyOpen) {
+    cards.forEach(c => c.classList.remove('open'));
+    btn.textContent = '▶ Rozwiń wszystkie';
+  } else {
+    cards.forEach(c => c.classList.add('open'));
+    btn.textContent = '▼ Zwiń wszystkie';
+  }
+}
+
+function toggleCard(h) {
+  h.closest('.dept-card').classList.toggle('open');
+  // Zaktualizuj label przycisku
+  const cards = document.querySelectorAll('.dept-card:not(.hidden)');
+  const anyOpen = Array.from(cards).some(c => c.classList.contains('open'));
+  const btn = document.getElementById('btnToggleAll');
+  if (btn) btn.textContent = anyOpen ? '▼ Zwiń wszystkie' : '▶ Rozwiń wszystkie';
+}
 
 function switchPanel(btn) {
   document.querySelectorAll('.admin-pill').forEach(b=>b.classList.remove('active'));
