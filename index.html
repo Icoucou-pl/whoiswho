@@ -419,6 +419,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="fg"><label>Stanowisko</label><input type="text" id="pRole" placeholder="Specjalista ds. importu"></div>
     <div class="fg"><label>O mnie</label><textarea id="pBio" placeholder="Kilka słów o sobie — czym się zajmuję, jak mogę pomóc..."></textarea></div>
     <div class="fg"><label>Kontakt</label><input type="text" id="pContact" placeholder="anna@firma.pl lub Teams: @anna"></div>
+    <div class="fg"><label>Numer telefonu</label><input type="tel" id="pPhone" placeholder="np. +48 123 456 789" autocomplete="tel"><div class="hint">Możesz zmienić również prefiks kraju.</div></div>
     <div class="fg"><label>Tagi — z czym do mnie przyjść</label><input type="text" id="pTags" placeholder="reklamacje, zwroty, zamówienia"><div class="hint">Oddziel przecinkami</div></div>
     <input type="hidden" id="pIdHidden">
     <div class="modal-actions">
@@ -775,6 +776,7 @@ function openProfileModal(id) {
   document.getElementById('pRole').value    = p.role    || '';
   document.getElementById('pBio').value     = p.bio     || '';
   document.getElementById('pContact').value = p.contact || '';
+  document.getElementById('pPhone').value   = String(p.phone || '').trim() || '+48 ';
   document.getElementById('pTags').value    = p.tags    || '';
   document.getElementById('pPin').value     = '';
   // admin nie musi wpisywać PIN
@@ -796,6 +798,7 @@ async function saveProfile() {
     role:    document.getElementById('pRole').value.trim(),
     bio:     document.getElementById('pBio').value.trim(),
     contact: document.getElementById('pContact').value.trim(),
+    phone:   document.getElementById('pPhone').value.trim(),
     tags:    document.getElementById('pTags').value.trim(),
   });
   btn.disabled = false; btn.textContent = '💾 Zapisz';
