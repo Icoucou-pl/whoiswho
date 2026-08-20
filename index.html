@@ -80,6 +80,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .person-role{font-size:0.77rem;color:var(--text-muted);margin-top:1px;}
 .person-bio{font-size:0.77rem;color:var(--text-muted);margin-top:5px;font-style:italic;padding:5px 9px;background:rgba(255,255,255,0.03);border-left:2px solid var(--teal);border-radius:0;line-height:1.5;}
 .person-contact{font-size:0.74rem;color:var(--teal);margin-top:3px;}
+.person-phone{font-size:0.74rem;color:var(--text-muted);margin-top:3px;}
+.phone-icon{color:var(--text-muted);font-style:normal;font-weight:700;}
+.phone-line.has-number .phone-icon{color:#2ecc71;}
 .person-topics{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
 .topic-tag{font-size:0.68rem;padding:2px 9px;border-radius:20px;font-weight:500;white-space:nowrap;}
 .person-btns{position:absolute;right:0;top:10px;display:flex;gap:4px;opacity:0;transition:opacity 0.2s;}
@@ -129,6 +132,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .badge{font-size:0.7rem;padding:2px 8px;border-radius:20px;font-weight:600;}
 .badge-admin{background:rgba(233,69,96,0.15);color:var(--accent);}
 .badge-viewer{background:var(--teal-soft);color:var(--teal);}
+.user-phone{margin-top:3px;color:var(--text-muted);font-size:0.76rem;}
 
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:2000;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.open{display:flex;}
@@ -506,6 +510,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <h3 id="userModalTitle">Nowy użytkownik</h3>
     <input type="hidden" id="umEmailOrig">
     <div class="fg"><label>E-mail</label><input type="email" id="umEmail" placeholder="pracownik@firma.pl"></div>
+    <div class="fg"><label>Numer telefonu</label><input type="tel" id="umPhone" placeholder="np. +48 123 456 789" autocomplete="tel"></div>
     <div class="fg"><label>PIN (4–8 cyfr)</label><input type="password" id="umPin" maxlength="8" placeholder="••••"><div class="hint">Zostaw puste żeby nie zmieniać przy edycji.</div></div>
     <div class="fg"><label>Rola</label>
       <select id="umRole"><option value="viewer">Viewer</option><option value="admin">Admin</option></select>
@@ -641,7 +646,7 @@ function renderDepts() {
     const card = document.createElement('div');
     card.className = `dept-card ${dept.color||'c-blue'}`;
     card.dataset.cat = dept.category || 'all';
-    card.dataset.keywords = [dept.name, dept.mission, ...persons.map(p=>[p.name,p.role,p.tags,p.bio].join(' '))].join(' ').toLowerCase();
+    card.dataset.keywords = [dept.name, dept.mission, ...persons.map(p=>[p.name,p.role,p.tags,p.bio,p.contact,p.email,p.phone].join(' '))].join(' ').toLowerCase();
     card.style.animationDelay = (idx*0.05)+'s';
     const admBtns = S.role==='admin' ? `
       <div class="dept-admin-btns">
@@ -667,7 +672,13 @@ function renderPerson(p) {
   const ini = parts.length>=2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : parts[0].slice(0,2).toUpperCase();
   const dot = (p.name&&p.name.trim()) ? '<span class="filled-dot"></span>' : '';
   const bio = p.bio ? `<div class="person-bio">${esc(p.bio)}</div>` : '';
-  const contact = p.contact ? `<div class="person-contact">📧 ${esc(p.contact)}</div>` : '';
+  const contactValue = p.contact || p.email || '';
+  const contact = contactValue ? `<div class="person-contact">📧 ${esc(contactValue)}</div>` : '';
+  const phoneValue = String(p.phone || '').trim();
+  const phoneAdded = hasPhoneNumber(phoneValue);
+  const phone = phoneAdded
+    ? `<div class="person-phone phone-line has-number"><span class="phone-icon">☎</span> ${esc(phoneValue)}</div>`
+    : '';
   const tags = p.tags ? p.tags.split(',').map(t=>`<span class="topic-tag">${esc(t.trim())}</span>`).join('') : '';
 
   // edit btn: admin sees on all, viewer only on own profile
@@ -680,7 +691,7 @@ function renderPerson(p) {
     <div class="person-info">
       <div class="person-name">${esc(name)}${dot}</div>
       <div class="person-role">${esc(p.role||'—')}</div>
-      ${bio}${contact}
+      ${bio}${contact}${phone}
       <div class="person-topics">${tags}</div>
     </div>
     <div class="person-btns">${editBtn}${delBtn}</div>
@@ -742,11 +753,18 @@ function renderProblemsTable() {
 }
 
 function renderUsersTable() {
-  document.getElementById('usersBody').innerHTML = S.users.map(u=>`<tr>
-    <td>${esc(u.email)}</td>
-    <td><span class="badge badge-${u.role}">${u.role}</span></td>
-    <td><button class="btn-icon" onclick="openUserModal('${esc(u.email)}')">✏️</button> <button class="btn-icon danger" onclick="deleteUserConfirm('${esc(u.email)}')">🗑️</button></td>
-  </tr>`).join('');
+  document.getElementById('usersBody').innerHTML = S.users.map(u=>{
+    const phoneValue = String(u.phone || '').trim();
+    const phoneAdded = hasPhoneNumber(phoneValue);
+    const phoneLine = phoneAdded
+      ? `<div class="user-phone phone-line has-number"><span class="phone-icon">☎</span> ${esc(phoneValue)}</div>`
+      : '';
+    return `<tr>
+      <td>${esc(u.email)}${phoneLine}</td>
+      <td><span class="badge badge-${u.role}">${u.role}</span></td>
+      <td><button class="btn-icon" onclick="openUserModal('${esc(u.email)}')">✏️</button> <button class="btn-icon danger" onclick="deleteUserConfirm('${esc(u.email)}')">🗑️</button></td>
+    </tr>`;
+  }).join('');
 }
 
 // ── PROFILE MODAL ──
@@ -904,6 +922,7 @@ function openUserModal(email) {
   document.getElementById('userModalTitle').textContent = u ? 'Edytuj użytkownika' : 'Nowy użytkownik';
   document.getElementById('umEmailOrig').value = u ? u.email : '';
   document.getElementById('umEmail').value     = u ? u.email : '';
+  document.getElementById('umPhone').value     = u && String(u.phone || '').trim() ? u.phone : '+48 ';
   document.getElementById('umPin').value       = '';
   document.getElementById('umRole').value      = u ? u.role  : 'viewer';
   document.getElementById('umEmail').disabled  = !!u;
@@ -915,6 +934,7 @@ async function saveUser() {
     action: 'saveUser',
     token:  localStorage.getItem(LS_TOKEN),
     email:  document.getElementById('umEmail').value.trim() || document.getElementById('umEmailOrig').value,
+    phone:  document.getElementById('umPhone').value.trim(),
     pin:    document.getElementById('umPin').value.trim(),
     role:   document.getElementById('umRole').value,
   });
@@ -1161,6 +1181,10 @@ function bar(pct) {
 
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function hasPhoneNumber(value) {
+  return String(value || '').replace(/\D/g, '').length > 2;
 }
 
 // ── CREATE ACCOUNT FROM PERSON ──
